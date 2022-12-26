@@ -1,0 +1,29 @@
+//here mount the cgroup up
+mount -t cgroup -o cpuset cpuset /sys/fs/cgroup/cpuset
+cd /sys/fs/cgroup/cpuset
+
+//here create a new file(actually a new cpu subsystem) and let your processes ready running in it
+//stress is the file name
+mkdir stress
+cd stress
+
+//do not let the parent cpuset share the cpus with the child cpuset
+echo 1 > cpuset.cpu_exclusive
+//here I select 4 cpus to be a cpuset group,use the tool numactl to check the cpus and memory node
+echo 2-5 > cpuset.cpus
+echo 0 > cpuset.mems
+
+//use the htop tool to check the processor PID
+htop
+
+//The first method: use echo $$ > tasks command,which puts the parent process in this group,
+//and then executing the tasks you need to put in
+echo $$ > tasks
+stress --cpu 3 --io 3 --vm 1
+
+//The second method:directly put the processes ID into the group one by one
+stress --cpu 3 --io 3 --vm 1
+echo PID_0 > tasks
+echo PID_1 > tasks
+...
+echo PID_n > tasks
